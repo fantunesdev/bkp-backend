@@ -21,11 +21,28 @@ class OsRepository:
         os.chdir(self.__backup.origin)
         for sub_directory in self.__backup.sub_directories:
             zip_name = f'{sub_directory}-{today}.tar.bz2'.lower()
+            exclude_directories = self.exclude_directories(sub_directory)
+            bzip_command = f'tar -cjf {zip_name} {self.__backup.origin}/{sub_directory} --exclude {exclude_directories}'
+            print(bzip_command)
             zip_command = f'tar -cjf {zip_name} {self.__backup.origin}/{sub_directory}'
-            os.system(zip_command)
+            # os.system(zip_command)
             self.__messages += f'O arquivo {zip_name} foi compactado com sucesso.\n'
         os.chdir(initial_directory)
         self.__messages += '\n'
+
+    def exclude_directories(self, sub_directory):
+        exclude_directories = ['venv', '.idea']
+        exclude_paths = ''
+        for item in self.__backup.get_all_directory_itens():
+            for directory in exclude_directories:
+                if directory in item:
+                    path = item.split(directory)
+                    full_path = f'{path[0]}{directory}'
+                    if full_path in exclude_paths:
+                        pass
+                    else:
+                        exclude_paths += f'"{full_path}" '
+        return exclude_paths
 
     def get_targets(self):
         targets = []
