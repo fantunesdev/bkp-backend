@@ -8,7 +8,7 @@ class Backup:
         self.__destiny = destiny
         self.__need_compress = need_compress
         self.__rsync_options = rsync_options
-        self.__sub_directories = self.__get_sub_directories()
+        self.__sub_directories = None
 
     @property
     def description(self):
@@ -32,9 +32,6 @@ class Backup:
 
     @property
     def sub_directories(self):
-        return self.__sub_directories
-
-    def __get_sub_directories(self):
         itens = os.listdir(self.__origin)
         directories = []
         for item in itens:
