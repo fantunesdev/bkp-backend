@@ -1,7 +1,8 @@
+from backup.databases import database
 from backup.queries import frequency_query, device_query
 from backup.repositories import os_repository
 
-import engine
+import engine as engine_file
 from entities import backup
 
 new_backup = backup.Backup('Pasta Git', '/home/fernando/git', '/tmp/teste', True, '')
@@ -9,7 +10,7 @@ new_backup = backup.Backup('Pasta Git', '/home/fernando/git', '/tmp/teste', True
 repository_os = os_repository.OsRepository(new_backup)
 
 
-engine = engine.EngineConnection()
+engine = engine_file.EngineConnection()
 session = engine.make_session()
 try:
     query_frequency = frequency_query.FrequencyQuery()
@@ -21,5 +22,6 @@ try:
     devices = query_device.get_devices(session)
     for device in devices:
         print(device)
+    # database.create_tables(engine)
 finally:
     session.close()

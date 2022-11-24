@@ -4,8 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from backup import engine
 
 Base = declarative_base()
-engine = engine.EngineConnection()
-engine_creator = engine.connect()
 
 
 class Backup(Base):
@@ -57,4 +55,6 @@ class Device(Base):
         return self.name
 
 
-Base.metadata.create_all(engine_creator)
+def create_tables(engine):
+    engine_creator = engine.connect()
+    Base.metadata.create_all(engine_creator)
