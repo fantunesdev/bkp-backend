@@ -1,7 +1,13 @@
-from sqlalchemy import Column, BigInteger, String, Boolean, Integer, ForeignKey, DateTime
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.ext.declarative import declarative_base
-
-from backup import engine
 
 Base = declarative_base()
 

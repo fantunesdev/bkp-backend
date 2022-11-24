@@ -2,13 +2,14 @@ import os
 
 
 class Backup:
-    def __init__(self, description, origin, destiny, need_compress, rsync_options):
+    def __init__(
+        self, description, origin, destiny, need_compress, rsync_options
+    ):
         self.__desciption = description
         self.__origin = origin
         self.__destiny = destiny
         self.__need_compress = need_compress
         self.__rsync_options = rsync_options
-        self.__sub_directories = None
 
     @property
     def description(self):

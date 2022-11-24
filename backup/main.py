@@ -1,11 +1,13 @@
-from backup.databases import database
-from backup.queries import frequency_query, device_query
-from backup.repositories import os_repository
-
 import engine as engine_file
 from entities import backup
 
-new_backup = backup.Backup('Pasta Git', '/home/fernando/git', '/tmp/teste', True, '')
+from backup.databases import database
+from backup.queries import device_query, frequency_query
+from backup.repositories import os_repository
+
+new_backup = backup.Backup(
+    'Pasta Git', '/home/fernando/git', '/tmp/teste', True, ''
+)
 
 repository_os = os_repository.OsRepository(new_backup)
 
