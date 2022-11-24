@@ -23,9 +23,8 @@ class OsRepository:
             zip_name = f'{sub_directory}-{today}.tar.bz2'.lower()
             exclude_directories = self.exclude_directories(sub_directory)
             bzip_command = f'tar -cjf {zip_name} {self.__backup.origin}/{sub_directory} --exclude {exclude_directories}'
-            print(bzip_command)
             zip_command = f'tar -cjf {zip_name} {self.__backup.origin}/{sub_directory}'
-            # os.system(zip_command)
+            os.system(zip_command)
             self.__messages += f'O arquivo {zip_name} foi compactado com sucesso.\n'
         os.chdir(initial_directory)
         self.__messages += '\n'
