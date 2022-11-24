@@ -5,6 +5,7 @@ class Backup:
     def __init__(
         self, description, origin, destiny, need_compress, rsync_options
     ):
+        """Método construtor da classe Backup."""
         self.__desciption = description
         self.__origin = origin
         self.__destiny = destiny

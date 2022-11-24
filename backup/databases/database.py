@@ -22,6 +22,7 @@ class Backup(Base):
     rsync_options = Column(String(20))
 
     def __repr__(self):
+        """Retorno padrão da classe Backup."""
         return self.description
 
 
@@ -31,6 +32,7 @@ class Frequency(Base):
     description = Column(String(50), nullable=False)
 
     def __repr__(self):
+        """Retorno padrão da classe Frequency."""
         return self.description
 
 
@@ -44,6 +46,7 @@ class Relatory(Base):
     log = Column(String)
 
     def __repr__(self):
+        """Retorno padrão da classe Relatory."""
         return f'{self.date}{self.backup}'
 
 
@@ -58,6 +61,7 @@ class Device(Base):
     options = Column(String(30))
 
     def __repr__(self):
+        """Retorno padrão da classe Device."""
         return self.name
 
 

@@ -8,6 +8,7 @@ from backup.entities.backup import Backup
 
 class OsRepository:
     def __init__(self, backup: Backup):
+        """Construtor da classe OsRepository."""
         self.__backup = backup
         self.__messages = ''
 

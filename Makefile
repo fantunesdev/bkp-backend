@@ -7,6 +7,6 @@ format:
 	@isort .
 	@blue .
 lint:
-	@isort . --check
-	@blue . --check
-	@prospector --with-tool pep257 --doc-warning
+	@prospector --with-tool pydocstyle --doc-warning
+	isort --check-only .
+	blue --check .
