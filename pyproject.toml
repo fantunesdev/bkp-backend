@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "backup"
+version = "0.0.1"
+description = "Aplicação para automatizar backups."
+authors = ["Fernando Antunes <f.antunes84@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+hvac = "^1.0.2"
+psycopg2 = "^2.9.5"
+python-dotenv = "^0.21.0"
+sqlalchemy = "^1.4.44"
+
+
+[tool.poetry.group.dev.dependencies]
+blue = "^0.9.1"
+isort = "^5.10.1"
+prospector = "^1.7.7"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
