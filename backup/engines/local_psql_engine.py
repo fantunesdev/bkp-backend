@@ -4,12 +4,13 @@ import hvac
 from dotenv import load_dotenv
 from hvac.exceptions import VaultDown
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+
+from backup.engines.engine import Engine
 
 load_dotenv()
 
 
-class LocalPsqlEngineConnection:
+class LocalPsqlEngineConnection(Engine):
     def connect(self):
         try:
             client = hvac.Client(url=os.getenv('VAULT_URL'))
@@ -20,11 +21,13 @@ class LocalPsqlEngineConnection:
             os.environ['POSTGRESQL_PASSWORD'] = client.kv.v1.read_secret(
                 'postgresql/password'
             )['data']['password']
+
             user = os.getenv('POSTGRESQL_USER')
             password = os.getenv('POSTGRESQL_PASSWORD')
             database = os.getenv('DATABASE')
             host = os.getenv('HOST')
-            port = os.getenv('PORT')
+            port = os.getenv('PSQL_PORT')
+
             database_url = (
                 f'postgresql://{user}:{password}@{host}:{port}/{database}'
             )
@@ -34,9 +37,3 @@ class LocalPsqlEngineConnection:
             os.system('vaultctl -u')
             self.connect()
             return None
-
-    def make_session(self):
-        connection = self.connect()
-        Session = sessionmaker()
-        Session.configure(bind=connection, autoflush=False)
-        return Session()

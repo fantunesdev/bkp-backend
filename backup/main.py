@@ -1,3 +1,4 @@
+from backup.engines import server_mysql_engine
 from engines import local_psql_engine
 from entities import backup
 
@@ -8,6 +9,10 @@ from backup.repositories import backup_repository, os_repository
 
 psql_engine = local_psql_engine.LocalPsqlEngineConnection()
 local_psql_session = psql_engine.make_session()
+
+mysql_engine = server_mysql_engine.ServerMysqlEngineConnection()
+server_mysql_session = mysql_engine.make_session()
+
 try:
     # database.create_tables(engine)
 
@@ -49,3 +54,4 @@ try:
     #     print(device)
 finally:
     local_psql_session.close()
+    server_mysql_session.close()
