@@ -3,39 +3,49 @@ import os
 
 class Backup:
     def __init__(
-        self, description, origin, target, need_compress, rsync_options
+        self, description, source, target, need_compress, rsync_options
     ):
         """Método construtor da classe Backup."""
-        self.__desciption = description
-        self.__origin = origin
+        self.description = description
+        self.__source = source
         self.__target = target
         self.__need_compress = need_compress
         self.__rsync_options = rsync_options
 
     def __str__(self):
-        return self.__desciption
+        return self.description
 
     def __eq__(self, other):
         return (
-            self.__origin == other.__origin and self.__target == other.__target
+            self.__source == other.__source and self.__target == other.__target
         )
 
     def __ne__(self, other):
         return (
-            self.__origin != other.__origin or self.__target != other.__target
+            self.__source != other.__source or self.__target != other.__target
         )
 
     @property
-    def description(self):
-        return self.__desciption
+    def source(self):
+        return self.__source
 
-    @property
-    def origin(self):
-        return self.__origin
+    @source.setter
+    def source(self, value):
+        if self.directory_is_valid(value):
+            self.__source = value
+        else:
+            raise FileNotFoundError
 
     @property
     def target(self):
         return self.__target
+
+    @target.setter
+    def target(self, value):
+        if self.directory_is_valid(value):
+            self.__target = value
+        else:
+            raise FileNotFoundError
 
     @property
     def need_compress(self):
@@ -47,13 +57,65 @@ class Backup:
 
     @property
     def sub_directories(self):
-        itens = os.listdir(self.__origin)
+        itens = os.listdir(self.__source)
         directories = []
         for item in itens:
-            is_directory = os.path.isdir(f'{self.__origin}/{item}')
+            is_directory = os.path.isdir(f'{self.__source}/{item}')
             if is_directory:
                 directories.append(item)
         return directories
+
+    def is_valid(self):
+        validations = [
+            self.directory_is_valid(self.__source),
+            self.directory_is_valid(self.__target),
+            self.need_compress_is_boolean(),
+            self.rsync_options_are_valid(),
+        ]
+        for validation in validations:
+            if not validation:
+                return False
+        return True
+
+    def directory_is_valid(self, directory: str):
+        if '\\' in directory:
+            directory = directory.replace('\\', '')
+        if os.path.exists(directory):
+            return True
+        if self.source == directory:
+            print('Diretório de origem não encontrado.')
+        if self.target == directory:
+            print('Diretório de destino não encontrado')
+        return False
+
+    def need_compress_is_boolean(self):
+        if isinstance(self.need_compress, bool):
+            return True
+        print('Needcompress não é um booleano.')
+        return False
+
+    def rsync_options_are_valid(self):
+        valid_options = ['-uahv', '--delete', '--safe-links']
+        for option in valid_options:
+            if self.__rsync_options == '':
+                return True
+            elif option in self.__rsync_options:
+                return True
+            else:
+                print('Opções inválidas do rsync')
+                return False
+
+    def validate_directory(self, diretory: str):
+        if self.directory_is_valid(diretory):
+            return diretory
+        else:
+            raise FileNotFoundError
+
+    def validate_rsync_options(self, rsync_options: str):
+        if self.rsync_options_are_valid(rsync_options):
+            return rsync_options
+        else:
+            raise ValueError
 
     def get_all_directory_itens(self, *args):
         if args:
@@ -61,7 +123,7 @@ class Backup:
             new_itens_list = args[1]
         else:
             new_itens_list = []
-            directory = self.origin
+            directory = self.source
 
         itens = os.listdir(directory)
 

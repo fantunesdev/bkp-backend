@@ -14,9 +14,9 @@ Base = declarative_base()
 
 class Backup(Base):
     __tablename__ = 'backup'
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True, unique=True)
     description = Column(String(50))
-    origin = Column(String(200))
+    source = Column(String(200))
     target = Column(String(200))
     need_compress = Column(Boolean, nullable=False)
     rsync_options = Column(String(20))
@@ -28,7 +28,7 @@ class Backup(Base):
 
 class Frequency(Base):
     __tablename__ = 'frequency'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     description = Column(String(50), nullable=False)
 
     def __repr__(self):
@@ -38,7 +38,7 @@ class Frequency(Base):
 
 class Relatory(Base):
     __tablename__ = 'relatory'
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True, unique=True)
     backup = Column('Backup', ForeignKey('backup.id'))
     status = Column(Boolean, nullable=False)
     frequency = Column('Frequency', ForeignKey('frequency.id'))
@@ -52,7 +52,7 @@ class Relatory(Base):
 
 class Device(Base):
     __tablename__ = 'device'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     uuid = Column(String(40), nullable=False)
     name = Column(String(20), nullable=False)
     label = Column(String(30))

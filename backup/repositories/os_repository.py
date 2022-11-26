@@ -1,6 +1,7 @@
 import filecmp
 import os
 import shutil
+import subprocess
 from datetime import date, datetime
 
 from backup.entities.backup import Backup
@@ -19,13 +20,11 @@ class OsRepository:
     def zip_sub_directories(self):
         today = date.today().strftime('%Y-%m-%d')
         initial_directory = os.getcwd()
-        os.chdir(self.__backup.origin)
+        os.chdir(self.__backup.source)
         for sub_directory in self.__backup.sub_directories:
             zip_name = f'{sub_directory}-{today}.tar.bz2'.lower()
-            # exclude_directories = self.exclude_directories(sub_directory)
-            # bzip_command = f'tar -cjf {zip_name} {self.__backup.origin}/{sub_directory} --exclude {exclude_directories}'
             zip_command = (
-                f'tar -cjf {zip_name} {self.__backup.origin}/{sub_directory}'
+                f'tar -cjf {zip_name} {self.__backup.source}/{sub_directory}'
             )
             os.system(zip_command)
             self.__messages += (
@@ -52,8 +51,8 @@ class OsRepository:
         targets = []
         zip_files = []
         initial_directory = os.getcwd()
-        os.chdir(self.__backup.origin)
-        itens = os.listdir(self.__backup.origin)
+        os.chdir(self.__backup.source)
+        itens = os.listdir(self.__backup.source)
         for item in itens:
             if 'tar.bz2' in item:
                 zip_files.append(item)
@@ -74,7 +73,7 @@ class OsRepository:
     def move_zip_files(self):
         try:
             initial_directory = os.getcwd()
-            os.chdir(self.__backup.origin)
+            os.chdir(self.__backup.source)
             targets = self.get_targets()
             for target in targets:
                 shutil.move(target['file'], target['path'])
@@ -89,7 +88,7 @@ class OsRepository:
     def make_backup(self):
         try:
             self.__messages += (
-                f'Iniciando o backup da pasta "{self.__backup.origin}".\n\n'
+                f'Iniciando o backup da pasta "{self.__backup.source}".\n\n'
             )
             start = datetime.now()
             if self.__backup.need_compress:
@@ -100,9 +99,20 @@ class OsRepository:
                     f'Total de backups realizados: {sub_directoryes_lenght}.\n'
                 )
             else:
-                command = f'rsync {self.__backup.rsync_options} "{self.__backup.origin}" "{self.__backup.target}"'
-                print(command)
-                # os.system(command)
+                subprocess_command_param = [
+                    'rsync',
+                    self.__backup.rsync_options,
+                    self.__backup.source,
+                    self.__backup.target,
+                ]
+                command = subprocess.Popen(
+                    subprocess_command_param, stdout=subprocess.PIPE, shell=False
+                )
+                output, error = command.communicate()
+                if output:
+                    self.__messages = output.decode('UTF-8')
+                else:
+                    self.__messages = error.decode('UTF-8')
             end = datetime.now()
             self.__messages += (
                 f'Tempo total: {(end - start).seconds} segundos.'
