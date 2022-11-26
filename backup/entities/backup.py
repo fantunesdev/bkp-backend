@@ -3,14 +3,27 @@ import os
 
 class Backup:
     def __init__(
-        self, description, origin, destiny, need_compress, rsync_options
+        self, description, origin, target, need_compress, rsync_options
     ):
         """Método construtor da classe Backup."""
         self.__desciption = description
         self.__origin = origin
-        self.__destiny = destiny
+        self.__target = target
         self.__need_compress = need_compress
         self.__rsync_options = rsync_options
+
+    def __str__(self):
+        return self.__desciption
+
+    def __eq__(self, other):
+        return (
+            self.__origin == other.__origin and self.__target == other.__target
+        )
+
+    def __ne__(self, other):
+        return (
+            self.__origin != other.__origin or self.__target != other.__target
+        )
 
     @property
     def description(self):
@@ -21,8 +34,8 @@ class Backup:
         return self.__origin
 
     @property
-    def destiny(self):
-        return self.__destiny
+    def target(self):
+        return self.__target
 
     @property
     def need_compress(self):

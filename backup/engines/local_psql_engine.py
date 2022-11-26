@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 load_dotenv()
 
 
-class EngineConnection:
+class LocalPsqlEngineConnection:
     def connect(self):
         try:
             client = hvac.Client(url=os.getenv('VAULT_URL'))

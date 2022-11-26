@@ -4,9 +4,9 @@ install:
 	@pip install --upgrade pip
 	@pip install -r requirements.txt
 format:
-	@isort .
+	@poetry run isort .
 	@blue .
 lint:
 	@prospector --with-tool pydocstyle --doc-warning
-	isort --check-only .
-	blue --check .
+	@poetry run isort --check-only .
+	@blue --check .

@@ -61,7 +61,7 @@ class OsRepository:
                 for sub_directory in self.__backup.sub_directories:
                     if sub_directory.lower() in file:
                         target = (
-                            f'{self.__backup.destiny}/{sub_directory}/{file}'
+                            f'{self.__backup.target}/{sub_directory}/{file}'
                         )
                         new_dict = {'file': file, 'path': target}
                         if new_dict in targets:
@@ -83,28 +83,34 @@ class OsRepository:
             self.__messages += '\n'
         except FileNotFoundError as error:
             folder = str(error).split('/')[-2]
-            os.makedirs(f'{self.__backup.destiny}/{folder}')
+            os.makedirs(f'{self.__backup.target}/{folder}')
             self.move_zip_files()
 
     def make_backup(self):
-        self.__messages += (
-            f'Iniciando o backup da pasta "{self.__backup.origin}".\n\n'
-        )
-        start = datetime.now()
-        if self.__backup.need_compress:
-            self.zip_sub_directories()
-            self.move_zip_files()
-            sub_directoryes_lenght = len(self.__backup.sub_directories)
+        try:
             self.__messages += (
-                f'Total de backups realizados: {sub_directoryes_lenght}.\n'
+                f'Iniciando o backup da pasta "{self.__backup.origin}".\n\n'
             )
-        else:
-            command = f'rsync {self.__backup.rsync_options} {self.__backup.origin} {self.__backup.destiny}'
-            os.system(command)
-        end = datetime.now()
-        self.__messages += f'Tempo total: {(end - start).seconds} segundos.'
+            start = datetime.now()
+            if self.__backup.need_compress:
+                self.zip_sub_directories()
+                self.move_zip_files()
+                sub_directoryes_lenght = len(self.__backup.sub_directories)
+                self.__messages += (
+                    f'Total de backups realizados: {sub_directoryes_lenght}.\n'
+                )
+            else:
+                command = f'rsync {self.__backup.rsync_options} "{self.__backup.origin}" "{self.__backup.target}"'
+                print(command)
+                # os.system(command)
+            end = datetime.now()
+            self.__messages += (
+                f'Tempo total: {(end - start).seconds} segundos.'
+            )
+        except AttributeError:
+            print('Não foi possível realizar o backup.')
 
     def files_are_equal(self, file0, file1):
-        path0 = f'{self.__backup.destiny}/{file0}'
-        path1 = f'{self.__backup.destiny}/{file1}'
+        path0 = f'{self.__backup.target}/{file0}'
+        path1 = f'{self.__backup.target}/{file1}'
         return filecmp.cmp(path0, path1)
