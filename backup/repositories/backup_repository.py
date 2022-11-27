@@ -1,11 +1,8 @@
-import os
-
 from sqlalchemy.orm.session import Session
 
 from backup.databases import database
 from backup.entities.backup import Backup
 from backup.queries import backup_query
-from backup.repositories import os_repository
 
 
 class BackupRepository:
@@ -46,29 +43,11 @@ class BackupRepository:
     def get_backups(self):
         return self.queries.get_backups()
 
-    def get_backup_by_id(self, id: int):
-        return self.queries.get_backup_by_id(id)
-
-    def update_backup(self, new_backup: database.Backup):
-        backup = Backup
-        backup.description = new_backup.description
-        backup.source = new_backup.source
-        backup.target = new_backup.target
-        backup.need_compress = new_backup.need_compress
-        backup.rsync_options = new_backup.rsync_options
-
-        if backup.is_valid():
-            old_backup = self.get_backup_by_id(new_backup.id)
-            old_backup.description = new_backup.description
-            old_backup.source = new_backup.source
-            old_backup.target = new_backup.target
-            old_backup.need_compress = new_backup.need_compress
-            old_backup.rsync_options = new_backup.rsync_options
-            return self.queries.update_backup(new_backup)
+    def get_backup_by_id(self, bakcup_id: int):
+        return self.queries.get_backup_by_id(bakcup_id)
 
     def delete_backup(self, backup: Backup):
         self.queries.delete_backup(backup)
-        return None
 
     def delete_backup_by_id(self, backup_id: int):
         self.queries.delete_backup_by_id(backup_id)

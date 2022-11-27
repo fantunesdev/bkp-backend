@@ -1,4 +1,4 @@
-from sqlalchemy.orm.exc import NoResultFound, UnmappedInstanceError
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.session import Session
 
 from backup.databases import database
@@ -20,9 +20,6 @@ class BackupQuery:
         if not db_backup:
             raise NoResultFound
         return db_backup
-
-    def update_backup(self, new_backup: database.Backup):
-        self.session.commit()
 
     def delete_backup(self, backup):
         self.session.delete(backup)

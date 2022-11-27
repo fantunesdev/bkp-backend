@@ -17,12 +17,12 @@ class Backup:
 
     def __eq__(self, other):
         return (
-            self.__source == other.__source and self.__target == other.__target
+            self.source == other.source and self.target == other.target
         )
 
     def __ne__(self, other):
         return (
-            self.__source != other.__source or self.__target != other.__target
+            self.source != other.source or self.target != other.target
         )
 
     @property
@@ -114,23 +114,20 @@ class Backup:
         for option in valid_options:
             if self.__rsync_options == '':
                 return True
-            elif option in self.__rsync_options:
+            if option in self.__rsync_options:
                 return True
-            else:
-                print('Opções inválidas do rsync')
-                return False
+            print('Opções inválidas do rsync')
+            return False
 
     def validate_directory(self, diretory: str):
         if self.directory_is_valid(diretory):
             return diretory
-        else:
-            raise FileNotFoundError
+        raise FileNotFoundError
 
     def validate_rsync_options(self, rsync_options: str):
         if self.rsync_options_are_valid():
             return rsync_options
-        else:
-            raise ValueError
+        raise ValueError
 
     def get_all_directory_itens(self, *args):
         if args:

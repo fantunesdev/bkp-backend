@@ -29,5 +29,4 @@ class RelatoryRepository:
         if isinstance(date, datetime):
             date_str = date.strftime('%Y-%m-%d')
             return self.__queries.get_relatory_by_date(date_str)
-        else:
-            return self.__queries.get_relatory_by_date(date)
+        return self.__queries.get_relatory_by_date(date)
