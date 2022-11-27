@@ -25,6 +25,10 @@ class RelatoryRepository:
     def get_relatory_by_id(self, relatory_id):
         return self.__queries.get_relatory_by_id(relatory_id)
 
-    def get_relatories_by_date(self, date):
-        return self.__queries.get_relatory_by_date(date)
+    def get_relatories_by_date(self, date: datetime):
+        if isinstance(date, datetime):
+            date_str = date.strftime('%Y-%m-%d')
+            return self.__queries.get_relatory_by_date(date_str)
+        else:
+            return self.__queries.get_relatory_by_date(date)
 

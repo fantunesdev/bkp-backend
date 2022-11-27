@@ -30,7 +30,7 @@ try:
     relatory = repository_relatory.get_relatory_by_id(2)
     print(relatory)
     print('novo teste')
-    relatories = repository_relatory.get_relatories_by_date('2022-11-26')
+    relatories = repository_relatory.get_relatories_by_date(datetime.today())
     for relatory in relatories:
         print(relatory)
 
