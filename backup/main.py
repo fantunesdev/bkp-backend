@@ -1,12 +1,13 @@
 from datetime import datetime
 
+from engines import local_psql_engine
+from entities import backup
+from repositories import backup_repository, os_repository
+
 from backup.databases import database
 from backup.engines import server_mysql_engine
 from backup.entities import relatory
 from backup.repositories import frequency_repository, relatory_repository
-from engines import local_psql_engine
-from entities import backup
-from repositories import os_repository, backup_repository
 
 psql_engine = local_psql_engine.LocalPsqlEngineConnection()
 local_psql_session = psql_engine.make_session()
@@ -17,15 +18,19 @@ server_mysql_session = mysql_engine.make_session()
 try:
     # database.create_tables(psql_engine)
     repository_backup = backup_repository.BackupRepository(local_psql_session)
-    repository_frequency = frequency_repository.FrequencyRepository(local_psql_session)
+    repository_frequency = frequency_repository.FrequencyRepository(
+        local_psql_session
+    )
     new_relatory = relatory.Relatory(
         backup=repository_backup.get_backup_by_id(1),
         status=True,
         frequency=repository_frequency.get_frequency_by_id(2),
         date=None,
-        log='Isto é um teste.'
+        log='Isto é um teste.',
     )
-    repository_relatory = relatory_repository.RelatoryRepository(local_psql_session)
+    repository_relatory = relatory_repository.RelatoryRepository(
+        local_psql_session
+    )
     # repository_relatory.create_relatory(new_relatory)
     relatory = repository_relatory.get_relatory_by_id(2)
     print(relatory)

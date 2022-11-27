@@ -18,9 +18,8 @@ class RelatoryQuery:
         return self.session.get(database.Relatory, relatory_id)
 
     def get_relatory_by_date(self, date):
-        return (
-            self.session.query(database.Relatory)
-            .filter(func.DATE(database.Relatory.date) == date)
+        return self.session.query(database.Relatory).filter(
+            func.DATE(database.Relatory.date) == date
         )
 
     def remove_relatory(self, relatory):

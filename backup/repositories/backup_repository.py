@@ -28,7 +28,7 @@ class BackupRepository:
                 source=backup.source,
                 target=backup.target,
                 need_compress=backup.need_compress,
-                rsync_options=backup.rsync_options
+                rsync_options=backup.rsync_options,
             )
 
     def create_backup(self, new_backup: Backup):

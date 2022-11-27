@@ -15,7 +15,7 @@ class RelatoryRepository:
             status=relatory.status,
             frequency=relatory.frequency.id,
             date=datetime.now(),
-            log=relatory.log
+            log=relatory.log,
         )
         self.__queries.create_relatory(new_relatory)
 
@@ -31,4 +31,3 @@ class RelatoryRepository:
             return self.__queries.get_relatory_by_date(date_str)
         else:
             return self.__queries.get_relatory_by_date(date)
-

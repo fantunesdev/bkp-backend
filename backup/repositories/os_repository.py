@@ -23,7 +23,7 @@ class OsRepository:
         os.chdir(self.__backup.source)
         for sub_directory in self.__backup.sub_directories:
             if self.__backup.sub_directories[0] == '.':
-                file_name = self.__backup.source.split('/')[- 1]
+                file_name = self.__backup.source.split('/')[-1]
             else:
                 file_name = sub_directory
             zip_name = f'{file_name}-{today}.tar.bz2'.lower()
@@ -108,9 +108,7 @@ class OsRepository:
             f'Total de backups realizados: {sub_directoryes_lenght}.\n'
         )
         end = datetime.now()
-        self.__messages += (
-            f'Tempo total: {(end - start).seconds} segundos.'
-        )
+        self.__messages += f'Tempo total: {(end - start).seconds} segundos.'
 
     def backup_without_compression(self):
         subprocess_command_param = [

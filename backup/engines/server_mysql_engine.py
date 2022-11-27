@@ -2,9 +2,10 @@ import os
 
 import hvac
 from dotenv import load_dotenv
-from backup.engines.engine import Engine
 from hvac.exceptions import VaultDown
 from sqlalchemy import create_engine
+
+from backup.engines.engine import Engine
 
 load_dotenv()
 
