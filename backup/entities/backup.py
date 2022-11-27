@@ -16,14 +16,10 @@ class Backup:
         return self.description
 
     def __eq__(self, other):
-        return (
-            self.source == other.source and self.target == other.target
-        )
+        return self.source == other.source and self.target == other.target
 
     def __ne__(self, other):
-        return (
-            self.source != other.source or self.target != other.target
-        )
+        return self.source != other.source or self.target != other.target
 
     @property
     def source(self):
