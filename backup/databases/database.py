@@ -47,7 +47,7 @@ class Relatory(Base):
 
     def __repr__(self):
         """Retorno padrão da classe Relatory."""
-        return f'{self.date}{self.backup}'
+        return f'Data: {self.date} - Backup: {self.backup}'
 
 
 class Device(Base):

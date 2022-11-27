@@ -1,13 +1,16 @@
-from backup.databases.database import Frequency
+from backup.databases import database
 
 
 class FrequencyQuery:
-    def get_frequencies(self, session):
-        return session.query(Frequency)
+    def __init__(self, session):
+        self.session = session
 
-    def get_frequency_by_id(self, session, frequency_id):
+    def get_frequencies(self):
+        return self.session.query(database.Frequency)
+
+    def get_frequency_by_id(self, frequency_id):
         return (
-            session.query(Frequency)
-            .filter(Frequency.id == frequency_id)
+            self.session.query(database.Frequency)
+            .filter(database.Frequency.id == frequency_id)
             .first()
         )

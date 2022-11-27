@@ -29,6 +29,6 @@ class BackupQuery:
         self.session.commit()
 
     def delete_backup_by_id(self, backup_id: int):
-        backup = self.get_backup_by_id( backup_id)
+        backup = self.get_backup_by_id(backup_id)
         self.session.delete(backup)
         self.session.commit()
