@@ -22,7 +22,11 @@ class OsRepository:
         initial_directory = os.getcwd()
         os.chdir(self.__backup.source)
         for sub_directory in self.__backup.sub_directories:
-            zip_name = f'{sub_directory}-{today}.tar.bz2'.lower()
+            if self.__backup.sub_directories[0] == '.':
+                file_name = self.__backup.source.split('/')[- 1]
+            else:
+                file_name = sub_directory
+            zip_name = f'{file_name}-{today}.tar.bz2'.lower()
             zip_command = (
                 f'tar -cjf {zip_name} {self.__backup.source}/{sub_directory}'
             )
@@ -86,39 +90,43 @@ class OsRepository:
             self.move_zip_files()
 
     def make_backup(self):
-        try:
-            self.__messages += (
-                f'Iniciando o backup da pasta "{self.__backup.source}".\n\n'
-            )
-            start = datetime.now()
-            if self.__backup.need_compress:
-                self.zip_sub_directories()
-                self.move_zip_files()
-                sub_directoryes_lenght = len(self.__backup.sub_directories)
-                self.__messages += (
-                    f'Total de backups realizados: {sub_directoryes_lenght}.\n'
-                )
-            else:
-                subprocess_command_param = [
-                    'rsync',
-                    self.__backup.rsync_options,
-                    self.__backup.source,
-                    self.__backup.target,
-                ]
-                command = subprocess.Popen(
-                    subprocess_command_param, stdout=subprocess.PIPE, shell=False
-                )
-                output, error = command.communicate()
-                if output:
-                    self.__messages = output.decode('UTF-8')
-                else:
-                    self.__messages = error.decode('UTF-8')
-            end = datetime.now()
-            self.__messages += (
-                f'Tempo total: {(end - start).seconds} segundos.'
-            )
-        except AttributeError:
-            print('Não foi possível realizar o backup.')
+        self.__messages += (
+            f'Iniciando o backup da pasta "{self.__backup.source}".\n\n'
+        )
+        if self.__backup.need_compress:
+            self.backup_with_compression()
+        else:
+            self.backup_without_compression()
+        print(self.__messages)
+
+    def backup_with_compression(self):
+        start = datetime.now()
+        self.zip_sub_directories()
+        self.move_zip_files()
+        sub_directoryes_lenght = len(self.__backup.sub_directories)
+        self.__messages += (
+            f'Total de backups realizados: {sub_directoryes_lenght}.\n'
+        )
+        end = datetime.now()
+        self.__messages += (
+            f'Tempo total: {(end - start).seconds} segundos.'
+        )
+
+    def backup_without_compression(self):
+        subprocess_command_param = [
+            'rsync',
+            self.__backup.rsync_options,
+            self.__backup.source,
+            self.__backup.target,
+        ]
+        command = subprocess.Popen(
+            subprocess_command_param, stdout=subprocess.PIPE, shell=False
+        )
+        output, error = command.communicate()
+        if output:
+            self.__messages = output.decode('UTF-8')
+        else:
+            self.__messages = error.decode('UTF-8')
 
     def files_are_equal(self, file0, file1):
         path0 = f'{self.__backup.target}/{file0}'

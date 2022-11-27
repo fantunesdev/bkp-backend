@@ -1,10 +1,12 @@
-from sqlalchemy import create_engine
+import abc
+
 from sqlalchemy.orm import sessionmaker
 
 
-class Engine:
+class Engine(abc.ABC):
+    @classmethod
     def connect(self):
-        pass
+        ...
 
     def make_session(self):
         connection = self.connect()

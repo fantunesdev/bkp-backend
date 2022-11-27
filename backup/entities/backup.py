@@ -41,7 +41,7 @@ class Backup:
         return self.__target
 
     @target.setter
-    def target(self, value):
+    def target(self, value: str):
         if self.directory_is_valid(value):
             self.__target = value
         else:
@@ -51,9 +51,22 @@ class Backup:
     def need_compress(self):
         return self.__need_compress
 
+    @need_compress.setter
+    def need_compress(self, value: bool):
+        if isinstance(value, bool):
+            self.__need_compress = value
+        raise ValueError
+
     @property
     def rsync_options(self):
         return self.__rsync_options
+
+    @rsync_options.setter
+    def rsync_options(self, value):
+        if self.rsync_options_are_valid():
+            self.__rsync_options = value
+        else:
+            raise ValueError
 
     @property
     def sub_directories(self):
@@ -63,6 +76,8 @@ class Backup:
             is_directory = os.path.isdir(f'{self.__source}/{item}')
             if is_directory:
                 directories.append(item)
+        if len(directories) == 0:
+            directories.append('.')
         return directories
 
     def is_valid(self):
@@ -112,7 +127,7 @@ class Backup:
             raise FileNotFoundError
 
     def validate_rsync_options(self, rsync_options: str):
-        if self.rsync_options_are_valid(rsync_options):
+        if self.rsync_options_are_valid():
             return rsync_options
         else:
             raise ValueError

@@ -9,22 +9,39 @@ from backup.repositories import os_repository
 
 
 class BackupRepository:
-    def __init__(self, session: Session, new_backup: Backup):
-        self.backup = new_backup
+    def __init__(self, session: Session, *new_backup: Backup):
+        self.__backup = new_backup
         self.session = session
-        self.os_repository = os_repository.OsRepository(self.backup)
         self.queries = backup_query.BackupQuery(self.session)
 
+    @property
+    def backup(self):
+        return self.__backup
+
+    @backup.setter
+    def backup(self, backup):
+        if isinstance(backup, Backup):
+            self.__backup = backup
+        else:
+            self.__backup = Backup(
+                description=backup.description,
+                source=backup.source,
+                target=backup.target,
+                need_compress=backup.need_compress,
+                rsync_options=backup.rsync_options
+            )
+
     def create_backup(self, new_backup: Backup):
-        self.backup = new_backup
-        new_db_backup = database.Backup(
-            description=self.backup.description,
-            source=self.backup.source,
-            target=self.backup.target,
-            need_compress=self.backup.need_compress,
-            rsync_options=self.backup.rsync_options,
-        )
-        self.queries.create_backup(new_db_backup)
+        self.__backup = new_backup
+        if self.__backup.is_valid():
+            new_db_backup = database.Backup(
+                description=self.__backup.description,
+                source=self.__backup.source,
+                target=self.__backup.target,
+                need_compress=self.__backup.need_compress,
+                rsync_options=self.__backup.rsync_options,
+            )
+            self.queries.create_backup(new_db_backup)
 
     def get_backups(self):
         return self.queries.get_backups()
@@ -33,13 +50,21 @@ class BackupRepository:
         return self.queries.get_backup_by_id(id)
 
     def update_backup(self, new_backup: database.Backup):
-        old_backup = self.get_backup_by_id(new_backup.id)
-        old_backup.description = new_backup.description
-        old_backup.source = new_backup.source
-        old_backup.target = new_backup.target
-        old_backup.need_compress = new_backup.need_compress
-        old_backup.rsync_options = new_backup.rsync_options
-        return self.queries.update_backup(new_backup)
+        backup = Backup
+        backup.description = new_backup.description
+        backup.source = new_backup.source
+        backup.target = new_backup.target
+        backup.need_compress = new_backup.need_compress
+        backup.rsync_options = new_backup.rsync_options
+
+        if backup.is_valid():
+            old_backup = self.get_backup_by_id(new_backup.id)
+            old_backup.description = new_backup.description
+            old_backup.source = new_backup.source
+            old_backup.target = new_backup.target
+            old_backup.need_compress = new_backup.need_compress
+            old_backup.rsync_options = new_backup.rsync_options
+            return self.queries.update_backup(new_backup)
 
     def delete_backup(self, backup: Backup):
         self.queries.delete_backup(backup)
