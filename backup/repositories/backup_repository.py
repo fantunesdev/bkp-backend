@@ -24,8 +24,9 @@ class BackupRepository:
                 description=backup.description,
                 source=backup.source,
                 target=backup.target,
-                need_compress=backup.need_compress,
-                rsync_options=backup.rsync_options,
+                program=backup.program,
+                options=backup.options,
+                frequency=backup.frequency
             )
 
     def create_backup(self, new_backup: Backup):
@@ -35,8 +36,9 @@ class BackupRepository:
                 description=self.__backup.description,
                 source=self.__backup.source,
                 target=self.__backup.target,
-                need_compress=self.__backup.need_compress,
-                rsync_options=self.__backup.rsync_options,
+                program=self.__backup.program,
+                options=self.__backup.options,
+                frequency=self.__backup.frequency
             )
             self.queries.create_backup(new_db_backup)
 

@@ -16,10 +16,11 @@ class Backup(Base):
     __tablename__ = 'backup'
     id = Column(BigInteger, primary_key=True, autoincrement=True, unique=True)
     description = Column(String(50))
-    source = Column(String(200))
-    target = Column(String(200))
-    need_compress = Column(Boolean, nullable=False)
-    rsync_options = Column(String(20))
+    source = Column(String(255))
+    target = Column(String(255), nullable=False)
+    program = Column(String(25), nullable=False)
+    options = Column(String(255))
+    frequency = Column('frequency', ForeignKey('frequency.id'))
 
     def __repr__(self):
         """Retorno padrão da classe Backup."""
@@ -41,7 +42,6 @@ class Relatory(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True, unique=True)
     backup = Column('Backup', ForeignKey('backup.id'))
     status = Column(Boolean, nullable=False)
-    frequency = Column('Frequency', ForeignKey('frequency.id'))
     date = Column(DateTime)
     log = Column(String)
 
@@ -56,7 +56,7 @@ class Device(Base):
     uuid = Column(String(40), nullable=False)
     name = Column(String(20), nullable=False)
     label = Column(String(30))
-    mount_point = Column(String(200))
+    mount_point = Column(String(255))
     type = Column(String(30))
     options = Column(String(30))
 

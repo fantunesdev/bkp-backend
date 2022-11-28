@@ -1,8 +1,7 @@
 class Relatory:
-    def __init__(self, backup, status, frequency, date, log):
+    def __init__(self, backup, status, date, log):
         self.__backup = backup
         self.__status = status
-        self.__frequency = frequency
         self.__date = date
         self.__log = log
 
@@ -13,10 +12,6 @@ class Relatory:
     @property
     def status(self):
         return self.__status
-
-    @property
-    def frequency(self):
-        return self.__frequency
 
     @property
     def date(self):

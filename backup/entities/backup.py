@@ -1,16 +1,21 @@
 import os
 
+from backup.databases import database
+
 
 class Backup:
+
     def __init__(
-        self, description, source, target, need_compress, rsync_options
+        self, description, source, target, program, options, frequency
     ):
         """Método construtor da classe Backup."""
         self.description = description
-        self.__source = source
+        self.source = source
         self.__target = target
-        self.__need_compress = need_compress
-        self.__rsync_options = rsync_options
+        self.program = program
+        self.options = options
+        self.frequency = frequency
+        self.__command = self.__set_command()
 
     def __str__(self):
         return self.description
@@ -20,17 +25,6 @@ class Backup:
 
     def __ne__(self, other):
         return self.source != other.source or self.target != other.target
-
-    @property
-    def source(self):
-        return self.__source
-
-    @source.setter
-    def source(self, value):
-        if self.directory_is_valid(value):
-            self.__source = value
-        else:
-            raise FileNotFoundError
 
     @property
     def target(self):
@@ -44,44 +38,41 @@ class Backup:
             raise FileNotFoundError
 
     @property
-    def need_compress(self):
-        return self.__need_compress
-
-    @need_compress.setter
-    def need_compress(self, value: bool):
-        if isinstance(value, bool):
-            self.__need_compress = value
-        raise ValueError
-
-    @property
-    def rsync_options(self):
-        return self.__rsync_options
-
-    @rsync_options.setter
-    def rsync_options(self, value):
-        if self.rsync_options_are_valid():
-            self.__rsync_options = value
-        else:
-            raise ValueError
+    def command(self):
+        return self.__command
 
     @property
     def sub_directories(self):
-        itens = os.listdir(self.__source)
+        itens = os.listdir(self.source)
         directories = []
         for item in itens:
-            is_directory = os.path.isdir(f'{self.__source}/{item}')
+            is_directory = os.path.isdir(f'{self.source}/{item}')
             if is_directory:
                 directories.append(item)
         if len(directories) == 0:
             directories.append('.')
         return directories
 
+    def __set_command(self):
+        if self.program == 'mysqldump':
+            return f'{self.program} {self.options} {self.source} > {self.target}'
+        else:
+            return f'{self.program} {self.options} "{self.source}" "{self.target}"'
+
+    def convert(self, backup: database.Backup):
+        self.description = backup.description
+        self.source = backup.source
+        self.__target = backup.target
+        self.program = backup.program
+        self.options = backup.options
+        self.frequency = backup.frequency
+        self.__command = self.__set_command()
+        return self
+
     def is_valid(self):
         validations = [
-            self.directory_is_valid(self.__source),
-            self.directory_is_valid(self.__target),
-            self.need_compress_is_boolean(),
-            self.rsync_options_are_valid(),
+            self.directory_is_valid(self.source),
+            self.directory_is_valid(self.__target)
         ]
         for validation in validations:
             if not validation:
@@ -97,33 +88,11 @@ class Backup:
             print('Diretório de origem não encontrado.')
         if self.target == directory:
             print('Diretório de destino não encontrado')
-        return False
-
-    def need_compress_is_boolean(self):
-        if isinstance(self.need_compress, bool):
-            return True
-        print('Needcompress não é um booleano.')
-        return False
-
-    def rsync_options_are_valid(self):
-        valid_options = ['-uahv', '--delete', '--safe-links']
-        for option in valid_options:
-            if self.__rsync_options == '':
-                return True
-            if option in self.__rsync_options:
-                return True
-            print('Opções inválidas do rsync')
-            return False
 
     def validate_directory(self, diretory: str):
         if self.directory_is_valid(diretory):
             return diretory
         raise FileNotFoundError
-
-    def validate_rsync_options(self, rsync_options: str):
-        if self.rsync_options_are_valid():
-            return rsync_options
-        raise ValueError
 
     def get_all_directory_itens(self, *args):
         if args:

@@ -1,11 +1,14 @@
 from datetime import datetime
 
+from backup.databases import database
+
 from backup.engines import local_psql_engine, server_mysql_engine
 from backup.entities import relatory
+from backup.entities.backup import Backup
 from backup.repositories import (
     backup_repository,
     frequency_repository,
-    relatory_repository,
+    relatory_repository, os_repository,
 )
 
 psql_engine = local_psql_engine.LocalPsqlEngineConnection()
@@ -15,45 +18,21 @@ mysql_engine = server_mysql_engine.ServerMysqlEngineConnection()
 server_mysql_session = mysql_engine.make_session()
 
 try:
-    # database.create_tables(psql_engine)
+    database.create_tables(psql_engine)
     repository_backup = backup_repository.BackupRepository(local_psql_session)
-    repository_frequency = frequency_repository.FrequencyRepository(
-        local_psql_session
-    )
-    new_relatory = relatory.Relatory(
-        backup=repository_backup.get_backup_by_id(1),
-        status=True,
-        frequency=repository_frequency.get_frequency_by_id(2),
-        date=None,
-        log='Isto é um teste.',
-    )
-    repository_relatory = relatory_repository.RelatoryRepository(
-        local_psql_session
-    )
-    # repository_relatory.create_relatory(new_relatory)
-    relatory = repository_relatory.get_relatory_by_id(2)
-    print(relatory)
-    print('novo teste')
-    relatories = repository_relatory.get_relatories_by_date(datetime.today())
-    for relatory in relatories:
-        print(relatory)
-
-    # new_backup = backup.Backup(
-    #     description='Pasta Teste',
-    #     source='/home/fernando/teste',
-    #     target='/home/fernando/teste-backup',
-    #     need_compress=False,
-    #     rsync_options='-uahv',
-    # )
-    # if new_backup.is_valid():
-    #     repository_backup = backup_repository.BackupRepository(local_psql_session, new_backup)
-    #     repository_backup.create_backup(new_backup)
-    #     for backup in repository_backup.get_backups():
-    #         print(backup)
-    # repository_backup = backup_repository.BackupRepository(local_psql_session)
-    # repository_backup.backup = repository_backup.get_backup_by_id(3)
-    # repository_os = os_repository.OsRepository(repository_backup.backup)
-    # repository_os.make_backup()
+    repository_frequence = frequency_repository.FrequencyRepository(local_psql_session)
+    backups = repository_backup.get_backups()
+    for backup_db in backups:
+        backup = Backup(
+            description=backup_db.description,
+            source=backup_db.source,
+            target=backup_db.target,
+            program=backup_db.program,
+            options=backup_db.options,
+            frequency=backup_db.frequency
+        )
+        reposytory_os = os_repository.OsRepository(backup)
+        reposytory_os.make_backup()
 
 finally:
     local_psql_session.close()

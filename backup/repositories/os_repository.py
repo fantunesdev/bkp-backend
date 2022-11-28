@@ -90,16 +90,19 @@ class OsRepository:
             self.move_zip_files()
 
     def make_backup(self):
+        match self.__backup.program:
+            case 'rsync':
+                self.rsync_backup()
+            case 'tar':
+                self.tar_backup()
+            case 'mysqldump':
+                self.rsync_backup()
+        print(self.__messages)
+
+    def tar_backup(self):
         self.__messages += (
             f'Iniciando o backup da pasta "{self.__backup.source}".\n\n'
         )
-        if self.__backup.need_compress:
-            self.backup_with_compression()
-        else:
-            self.backup_without_compression()
-        print(self.__messages)
-
-    def backup_with_compression(self):
         start = datetime.now()
         self.zip_sub_directories()
         self.move_zip_files()
@@ -110,10 +113,11 @@ class OsRepository:
         end = datetime.now()
         self.__messages += f'Tempo total: {(end - start).seconds} segundos.'
 
-    def backup_without_compression(self):
+    def rsync_backup(self):
+        options = self.__backup.options.split(' ')
         subprocess_command_param = [
-            'rsync',
-            self.__backup.rsync_options,
+            self.__backup.program,
+            options,
             self.__backup.source,
             self.__backup.target,
         ]
@@ -124,7 +128,8 @@ class OsRepository:
         if output:
             self.__messages = output.decode('UTF-8')
         else:
-            self.__messages = error.decode('UTF-8')
+            if error:
+                self.__messages = error.decode('UTF-8')
 
     def files_are_equal(self, file0, file1):
         path0 = f'{self.__backup.target}/{file0}'
