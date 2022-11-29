@@ -1,3 +1,4 @@
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm.session import Session
 
 from backup.databases import database
@@ -46,7 +47,10 @@ class BackupRepository:
         return self.queries.get_backups()
 
     def get_backup_by_id(self, bakcup_id: int):
-        return self.queries.get_backup_by_id(bakcup_id)
+        try:
+            return self.queries.get_backup_by_id(bakcup_id)
+        except NoResultFound:
+            return None
 
     def delete_backup(self, backup: Backup):
         self.queries.delete_backup(backup)

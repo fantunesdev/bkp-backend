@@ -54,10 +54,7 @@ class Backup:
         return directories
 
     def __set_command(self):
-        if self.program == 'mysqldump':
-            return f'{self.program} {self.options} {self.source} > {self.target}'
-        else:
-            return f'{self.program} {self.options} "{self.source}" "{self.target}"'
+        return f'{self.program} {self.options} "{self.source}" "{self.target}"'
 
     def convert(self, backup: database.Backup):
         self.description = backup.description

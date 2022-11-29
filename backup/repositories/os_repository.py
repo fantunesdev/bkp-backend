@@ -96,7 +96,8 @@ class OsRepository:
             case 'tar':
                 self.tar_backup()
             case 'mysqldump':
-                self.rsync_backup()
+                self.mysql_backup()
+
         print(self.__messages)
 
     def tar_backup(self):
@@ -104,8 +105,10 @@ class OsRepository:
             f'Iniciando o backup da pasta "{self.__backup.source}".\n\n'
         )
         start = datetime.now()
+
         self.zip_sub_directories()
         self.move_zip_files()
+
         sub_directoryes_lenght = len(self.__backup.sub_directories)
         self.__messages += (
             f'Total de backups realizados: {sub_directoryes_lenght}.\n'
@@ -114,13 +117,11 @@ class OsRepository:
         self.__messages += f'Tempo total: {(end - start).seconds} segundos.'
 
     def rsync_backup(self):
-        options = self.__backup.options.split(' ')
-        subprocess_command_param = [
-            self.__backup.program,
-            options,
-            self.__backup.source,
-            self.__backup.target,
-        ]
+        subprocess_command_param = self.__backup.command.split(' ')
+        for index in range(1):
+            subprocess_command_param.pop()
+        subprocess_command_param.append(self.__backup.source)
+        subprocess_command_param.append(self.__backup.target)
         command = subprocess.Popen(
             subprocess_command_param, stdout=subprocess.PIPE, shell=False
         )
@@ -131,7 +132,19 @@ class OsRepository:
             if error:
                 self.__messages = error.decode('UTF-8')
 
-    def files_are_equal(self, file0, file1):
-        path0 = f'{self.__backup.target}/{file0}'
-        path1 = f'{self.__backup.target}/{file1}'
-        return filecmp.cmp(path0, path1)
+    def mysql_backup(self):
+        param = self.__backup.command.replace('"', '').split(' ')
+        param.pop()
+        with open(self.__backup.target, 'w') as dumpfile:
+            command = subprocess.Popen(param, stdout=dumpfile)
+            output, error = command.communicate()
+            if output:
+                self.__messages = output.decode('UTF-8')
+            else:
+                if error:
+                    self.__messages = error.decode('UTF-8')
+            dumpfile.close()
+        print(self.messages)
+
+    def files_are_equal(self, file0):
+        return filecmp.cmp(file0, self.__backup.target)
