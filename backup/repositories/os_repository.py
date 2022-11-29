@@ -150,11 +150,11 @@ class OsRepository:
         output, error = command.communicate()
         if output:
             new_relatory.status = True
-            self.__messages = output.decode('UTF-8')
+            self.__messages += output.decode('UTF-8')
         else:
             if error:
                 new_relatory.status = False
-                self.__messages = error.decode('UTF-8')
+                self.__messages += error.decode('UTF-8')
         new_relatory.log = self.messages
 
     def mysql_backup(self, new_relatory: relatory.Relatory):

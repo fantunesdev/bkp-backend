@@ -36,7 +36,7 @@ try:
     #     reposytory_os = os_repository.OsRepository(backup)
     #     reposytory_os.make_backup()
 
-    backup_db = repository_backup.get_backup_by_id(3)
+    backup_db = repository_backup.get_backup_by_id(2)
     backup = Backup(
         description=backup_db.description,
         source=backup_db.source,
