@@ -21,6 +21,15 @@ class BackupQuery:
             raise NoResultFound
         return db_backup
 
+    def get_backup_by_description_and_frequency(self, backup):
+        backup_db = self.session.query(database.Backup)\
+            .filter(database.Backup.description == backup.description and
+                    database.Backup.frequency == backup.frequency)\
+            .first()
+        if not backup_db:
+            raise NoResultFound
+        return backup_db
+
     def delete_backup(self, backup):
         self.session.delete(backup)
         self.session.commit()

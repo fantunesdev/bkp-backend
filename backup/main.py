@@ -46,7 +46,7 @@ try:
         frequency=backup_db.frequency
     )
     repository_os = os_repository.OsRepository(backup)
-    repository_os.make_backup()
+    repository_os.make_backup(local_psql_session)
 
     # backup = Backup(
     #     description='Teste',

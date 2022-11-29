@@ -13,7 +13,6 @@ class RelatoryRepository:
         new_relatory = database.Relatory(
             backup=relatory.backup.id,
             status=relatory.status,
-            frequency=relatory.frequency.id,
             date=datetime.now(),
             log=relatory.log,
         )
