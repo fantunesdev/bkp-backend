@@ -3,6 +3,7 @@ from backup.databases import database
 
 class FrequencyQuery:
     def __init__(self, session):
+        """A classe FrequencyQuery faz as queries do SQL-Alchemy para a classe Frequency."""
         self.session = session
 
     def get_frequencies(self):

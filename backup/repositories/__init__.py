@@ -1,1 +1,1 @@
-"""Pacote que faz as manipulações de dados."""
+"""Package de repositórios."""

@@ -3,6 +3,7 @@ from backup.queries import frequency_query
 
 class FrequencyRepository:
     def __init__(self, session):
+        """Método construtor."""
         self.session = session
         self.queries = frequency_query.FrequencyQuery(self.session)
 

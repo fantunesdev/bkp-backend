@@ -5,6 +5,7 @@ from backup.databases import database
 
 class RelatoryQuery:
     def __init__(self, session):
+        """Método construtor de RelatoryQuery."""
         self.session = session
 
     def create_relatory(self, relatory: database.Relatory):

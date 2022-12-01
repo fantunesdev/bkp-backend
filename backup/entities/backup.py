@@ -4,9 +4,14 @@ from backup.databases import database
 
 
 class Backup:
-
     def __init__(
-        self, description, source, target, program, options, frequency
+        self,
+        description=None,
+        source=None,
+        target=None,
+        program=None,
+        options=None,
+        frequency=None,
     ):
         """Método construtor da classe Backup."""
         self.description = description
@@ -15,15 +20,18 @@ class Backup:
         self.program = program
         self.options = options
         self.frequency = frequency
-        self.__command = self.__set_command()
+        self.command = self.__set_command()
 
     def __str__(self):
+        """Retorna por padrão a descrição da instância da classe."""
         return self.description
 
     def __eq__(self, other):
+        """Verifica se dois objetos desta classe são iguais."""
         return self.source == other.source and self.target == other.target
 
     def __ne__(self, other):
+        """Verifica se dois objetos desta classe são diferentes."""
         return self.source != other.source or self.target != other.target
 
     @property
@@ -36,10 +44,6 @@ class Backup:
             self.__target = value
         else:
             raise FileNotFoundError
-
-    @property
-    def command(self):
-        return self.__command
 
     @property
     def sub_directories(self):
@@ -63,13 +67,13 @@ class Backup:
         self.program = backup.program
         self.options = backup.options
         self.frequency = backup.frequency
-        self.__command = self.__set_command()
+        self.command = self.__set_command()
         return self
 
     def is_valid(self):
         validations = [
             self.directory_is_valid(self.source),
-            self.directory_is_valid(self.__target)
+            self.directory_is_valid(self.__target),
         ]
         for validation in validations:
             if not validation:
@@ -85,6 +89,7 @@ class Backup:
             print('Diretório de origem não encontrado.')
         if self.target == directory:
             print('Diretório de destino não encontrado')
+        return False
 
     def validate_directory(self, diretory: str):
         if self.directory_is_valid(diretory):

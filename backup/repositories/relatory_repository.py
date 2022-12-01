@@ -6,6 +6,7 @@ from backup.queries import relatory_query
 
 class RelatoryRepository:
     def __init__(self, session):
+        """Método construtor."""
         self.session = session
         self.__queries = relatory_query.RelatoryQuery(self.session)
 

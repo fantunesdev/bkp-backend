@@ -1,12 +1,11 @@
 import filecmp
 import os
-import shutil
 import subprocess
 from datetime import date, datetime
 
 from backup.entities import relatory
 from backup.entities.backup import Backup
-from backup.repositories import relatory_repository, backup_repository
+from backup.repositories import backup_repository, relatory_repository
 
 
 class OsRepository:
@@ -14,39 +13,188 @@ class OsRepository:
         """Construtor da classe OsRepository."""
         self.backup = backup
         self.__messages = ''
+        self.today = date.today().strftime('%Y-%m-%d')
+        self.relatory = relatory.Relatory()
 
     @property
     def messages(self):
         return self.__messages
 
-    def zip_sub_directories(self, new_relatory: relatory.Relatory):
-        today = date.today().strftime('%Y-%m-%d')
+    def compress_file_wont_be_empy(self):
+        itens = os.listdir(self.backup.source)
+        files = []
+        for item in itens:
+            is_directory = os.path.isdir(f'{self.backup.source}/{item}')
+            if not is_directory:
+                files.append(item)
+        if len(files) == 0:
+            return False
+        return True
+
+    def make_backup(self, session):
+        match self.backup.program:
+            case 'rsync':
+                self.rsync_backup()
+            case 'tar':
+                self.tar_backup()
+            case 'mysqldump':
+                self.mysql_backup()
+        repository_relatory = relatory_repository.RelatoryRepository(session)
+        repository_backup = backup_repository.BackupRepository(
+            session, self.backup
+        )
+        backup_db = repository_backup.get_backup_by_description_and_frequency(
+            self.backup
+        )
+        self.relatory.backup = backup_db
+        repository_relatory.create_relatory(self.relatory)
+
+    def tar_backup(self):
+        self.__messages += (
+            f'Iniciando o backup da pasta "{self.backup.source}":\n'
+        )
+        start = datetime.now()
+
+        self.compress_directory()
+
+        total_backups = len(self.backup.sub_directories)
+        if self.compress_file_wont_be_empy():
+            total_backups += 1
+        elif self.backup.sub_directories == '.':
+            total_backups -= 1
+        self.__messages += f'\nTotal de backups realizados: {total_backups}.\n'
+        end = datetime.now()
+        self.__messages += f'Tempo total: {(end - start).seconds} segundos.'
+        self.relatory.log = self.messages
+
+    def compress_directory(self):
         initial_directory = os.getcwd()
         os.chdir(self.backup.source)
-        for sub_directory in self.backup.sub_directories:
-            if self.backup.sub_directories[0] == '.':
-                file_name = self.backup.source.split('/')[-1]
-            else:
-                file_name = sub_directory
-            zip_name = f'{file_name}-{today}.tar.bz2'.lower()
-            zip_command = (
-                f'tar -cjf {zip_name} {self.backup.source}/{sub_directory}'
-            )
-            os.system(zip_command)
-            path_file = os.path.isdir(f'{self.backup.source}/{file_name}')
-            if os.path.isfile(path_file):
-                self.__messages += (
-                    f'O arquivo {zip_name} foi compactado com sucesso.\n'
-                )
-                new_relatory.status = True
-            else:
-                self.__messages += (
-                    f'Houve um erro na compactação do arquivo{zip_name}.\n'
-                )
-                new_relatory.status = False
-            new_relatory.log = self.messages
+        status_list = []
+
+        if self.compress_file_wont_be_empy():
+            self.compress_root_directory(status_list)
+        elif self.backup.sub_directories != '.':
+            self.compress_sub_directories(status_list)
+
+        if False in status_list:
+            self.relatory.status = False
+        else:
+            self.relatory.status = True
+
         os.chdir(initial_directory)
-        self.__messages += '\n'
+
+    def compress_root_directory(self, status_list: list):
+        exclude = ''
+        self.__messages += f'\nCompactando diretório {self.backup.source}: '
+        for directory in self.backup.sub_directories:
+            exclude += f'--exclude={directory} '
+        file_name = (
+            f'{self.backup.source.split("/")[-1]}-{self.today}.tar.bz2'.lower()
+        )
+        self.backup.command = f'tar -cjf /tmp/{file_name} {exclude} .'
+        param = self.backup.command.split(' ')
+        with subprocess.Popen(param) as command:
+            self.get_console_response(command)
+            self.move_file(f'/tmp/{file_name}', self.backup.target)
+            status = os.path.isfile(f'{self.backup.target}/{file_name}')
+            status_list.append(status)
+
+    def compress_sub_directories(self, status_list: list):
+        for sub_directory in self.backup.sub_directories:
+            self.__messages += f'\nCompactando diretório {self.backup.source}/{sub_directory}: '
+            file_name = f'{sub_directory}-{self.today}.tar.bz2'.lower()
+            compress_command = f'tar -cjf /tmp/{file_name} {sub_directory}'
+            param = compress_command.split(' ')
+            with subprocess.Popen(param) as command:
+                self.get_console_response(command)
+                self.move_file(
+                    f'/tmp/{file_name}',
+                    f'{self.backup.target}/{sub_directory}/',
+                )
+                status = os.path.isfile(
+                    f'{self.backup.target}/{sub_directory}/{file_name}'
+                )
+                status_list.append(status)
+
+    def get_targets(self):
+        targets = []
+        zip_files = []
+        initial_directory = os.getcwd()
+        os.chdir(self.backup.source)
+        itens = os.listdir(self.backup.source)
+        for item in itens:
+            if 'tar.bz2' in item:
+                zip_files.append(item)
+            for file in zip_files:
+                for sub_directory in self.backup.sub_directories:
+                    if sub_directory.lower() in file:
+                        target = f'{self.backup.target}/{sub_directory}/{file}'
+                        new_dict = {'file': file, 'path': target}
+                        if new_dict in targets:
+                            pass
+                        else:
+                            targets.append(new_dict)
+        os.chdir(initial_directory)
+        return targets
+
+    def move_file(self, source: str, target: str):
+        try:
+            self.__messages += f'Movendo {source} para {self.backup.source}:'
+            if not os.path.isdir(target):
+                raise FileNotFoundError
+            with subprocess.Popen(['mv', source, target]) as command:
+                self.get_console_response(command)
+        except FileNotFoundError:
+            os.makedirs(target)
+            self.move_file(source, target)
+
+    def rsync_backup(self):
+        subprocess_command_param = self.backup.command.split(' ')
+        subprocess_command_param.pop()
+        subprocess_command_param.pop()
+        subprocess_command_param.append(self.backup.source)
+        subprocess_command_param.append(self.backup.target)
+        with subprocess.Popen(
+            subprocess_command_param, stdout=subprocess.PIPE, shell=False
+        ) as command:
+            self.get_console_response(command)
+
+    def mysql_backup(self):
+        param = self.backup.command.replace('"', '').split(' ')
+        param.pop()
+        with open(self.backup.target, 'w', encoding='utf-8') as dumpfile:
+            with subprocess.Popen(param, stdout=dumpfile) as command:
+                output, error = command.communicate()
+                if output:
+                    self.__messages = output.decode('UTF-8')
+                    self.relatory.status = True
+                else:
+                    if error:
+                        self.__messages = error.decode('UTF-8')
+                        self.relatory.status = False
+                    else:
+                        self.__messages = (
+                            f'Backup {self.backup} realizado com sucesso!'
+                        )
+                        self.relatory.status = True
+                    dumpfile.close()
+        self.relatory.log = self.messages
+
+    def get_console_response(self, command: subprocess.Popen):
+        output, error = command.communicate()
+        if output:
+            self.relatory.status = True
+            self.__messages += 'SUCESSO!\n'
+            self.__messages += output.decode('UTF-8')
+        else:
+            if error:
+                self.relatory.status = False
+                self.__messages += 'FALHOU!\n'
+                self.__messages += error.decode('UTF-8')
+            else:
+                self.relatory.status = True
+                self.__messages += 'SUCESSO!\n'
 
     def exclude_directories(self):
         exclude_directories = ['venv', '.idea']
@@ -61,120 +209,6 @@ class OsRepository:
                     else:
                         exclude_paths += f'"{full_path}" '
         return exclude_paths
-
-    def get_targets(self):
-        targets = []
-        zip_files = []
-        initial_directory = os.getcwd()
-        os.chdir(self.backup.source)
-        itens = os.listdir(self.backup.source)
-        for item in itens:
-            if 'tar.bz2' in item:
-                zip_files.append(item)
-            for file in zip_files:
-                for sub_directory in self.backup.sub_directories:
-                    if sub_directory.lower() in file:
-                        target = (
-                            f'{self.backup.target}/{sub_directory}/{file}'
-                        )
-                        new_dict = {'file': file, 'path': target}
-                        if new_dict in targets:
-                            pass
-                        else:
-                            targets.append(new_dict)
-        os.chdir(initial_directory)
-        return targets
-
-    def move_zip_files(self, new_relatory: relatory.Relatory):
-        try:
-            initial_directory = os.getcwd()
-            os.chdir(self.backup.source)
-            targets = self.get_targets()
-            for target in targets:
-                shutil.move(target['file'], target['path'])
-                path_file = os.path.isdir(f'{self.backup.source}/{target["file"]}')
-                if os.path.isfile(path_file):
-                    new_relatory.status = True
-                    self.__messages += f'O arquivo {target["file"]} foi movido para {target["path"]}.\n'
-                else:
-                    self.__messages += f'Ocorreu um erro ao mover {target["file"]} para {target["path"]}.\n'
-                    new_relatory.status = False
-                new_relatory.log += self.messages
-            os.chdir(initial_directory)
-            self.__messages += '\n'
-        except FileNotFoundError as error:
-            folder = str(error).split('/')[-2]
-            os.makedirs(f'{self.backup.target}/{folder}')
-            self.move_zip_files(new_relatory)
-
-    def make_backup(self, session):
-        new_relatory = relatory.Relatory(backup=self.backup)
-        match self.backup.program:
-            case 'rsync':
-                self.rsync_backup(new_relatory)
-            case 'tar':
-                self.tar_backup(new_relatory)
-            case 'mysqldump':
-                self.mysql_backup(new_relatory)
-        repository_relatory = relatory_repository.RelatoryRepository(session)
-        repository_backup = backup_repository.BackupRepository(session, self.backup)
-        backup_db = repository_backup.get_backup_by_description_and_frequency(self.backup)
-        new_relatory.backup = backup_db
-        repository_relatory.create_relatory(new_relatory)
-
-    def tar_backup(self, new_relatory: relatory.Relatory):
-        self.__messages += (
-            f'Iniciando o backup da pasta "{self.backup.source}".\n\n'
-        )
-        start = datetime.now()
-
-        self.zip_sub_directories(new_relatory)
-        self.move_zip_files()
-
-        sub_directoryes_lenght = len(self.backup.sub_directories)
-        self.__messages += (
-            f'Total de backups realizados: {sub_directoryes_lenght}.\n'
-        )
-        end = datetime.now()
-        self.__messages += f'Tempo total: {(end - start).seconds} segundos.'
-
-    def rsync_backup(self, new_relatory: relatory.Relatory):
-        subprocess_command_param = self.backup.command.split(' ')
-        for index in range(1):
-            subprocess_command_param.pop()
-        subprocess_command_param.append(self.backup.source)
-        subprocess_command_param.append(self.backup.target)
-        command = subprocess.Popen(
-            subprocess_command_param, stdout=subprocess.PIPE, shell=False
-        )
-        output, error = command.communicate()
-        if output:
-            new_relatory.status = True
-            self.__messages += output.decode('UTF-8')
-        else:
-            if error:
-                new_relatory.status = False
-                self.__messages += error.decode('UTF-8')
-        new_relatory.log = self.messages
-
-    def mysql_backup(self, new_relatory: relatory.Relatory):
-        param = self.backup.command.replace('"', '').split(' ')
-        param.pop()
-        with open(self.backup.target, 'w') as dumpfile:
-            command = subprocess.Popen(param, stdout=dumpfile)
-            output, error = command.communicate()
-            if output:
-                self.__messages = output.decode('UTF-8')
-                new_relatory.status = True
-            else:
-                if error:
-                    self.__messages = error.decode('UTF-8')
-                    new_relatory.status = False
-                else:
-                    self.__messages = f'Backup {self.backup} realizado com sucesso!'
-                    new_relatory.status = True
-                dumpfile.close()
-        new_relatory.log = self.messages
 
     def files_are_equal(self, file0):
         return filecmp.cmp(file0, self.backup.target)

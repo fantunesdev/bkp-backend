@@ -8,6 +8,7 @@ from backup.queries import backup_query
 
 class BackupRepository:
     def __init__(self, session: Session, *new_backup: Backup):
+        """Construtor de BackupRepository."""
         self.__backup = new_backup
         self.session = session
         self.queries = backup_query.BackupQuery(self.session)
@@ -27,7 +28,7 @@ class BackupRepository:
                 target=backup.target,
                 program=backup.program,
                 options=backup.options,
-                frequency=backup.frequency
+                frequency=backup.frequency,
             )
 
     def create_backup(self, new_backup: Backup):
@@ -39,7 +40,7 @@ class BackupRepository:
                 target=self.__backup.target,
                 program=self.__backup.program,
                 options=self.__backup.options,
-                frequency=self.__backup.frequency
+                frequency=self.__backup.frequency,
             )
             self.queries.create_backup(new_db_backup)
 

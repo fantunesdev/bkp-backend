@@ -6,6 +6,7 @@ from backup.databases import database
 
 class BackupQuery:
     def __init__(self, session: Session):
+        """A classe BackupQuery faz as queries do SQL-Alchemy para a classe Backup."""
         self.session = session
 
     def create_backup(self, new_backup: database.Backup):
@@ -22,10 +23,14 @@ class BackupQuery:
         return db_backup
 
     def get_backup_by_description_and_frequency(self, backup):
-        backup_db = self.session.query(database.Backup)\
-            .filter(database.Backup.description == backup.description and
-                    database.Backup.frequency == backup.frequency)\
+        backup_db = (
+            self.session.query(database.Backup)
+            .filter(
+                database.Backup.description == backup.description
+                and database.Backup.frequency == backup.frequency
+            )
             .first()
+        )
         if not backup_db:
             raise NoResultFound
         return backup_db

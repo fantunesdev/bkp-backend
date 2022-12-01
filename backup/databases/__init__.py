@@ -1,1 +1,1 @@
-"""Gerencia a conexão com o banco de dados."""
+"""Package de databases."""
