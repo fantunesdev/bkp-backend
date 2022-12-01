@@ -151,14 +151,13 @@ class OsRepository:
 
     def rsync_backup(self):
         subprocess_command_param = self.backup.command.split(' ')
-        subprocess_command_param.pop()
-        subprocess_command_param.pop()
         subprocess_command_param.append(self.backup.source)
         subprocess_command_param.append(self.backup.target)
         with subprocess.Popen(
             subprocess_command_param, stdout=subprocess.PIPE, shell=False
         ) as command:
             self.get_console_response(command)
+        self.relatory.log = self.messages
 
     def mysql_backup(self):
         param = self.backup.command.replace('"', '').split(' ')

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /var/lib/bkp-backend/
+source /var/lib/bkp-backend/.venv/bin/activate
+python backup/main.py $1

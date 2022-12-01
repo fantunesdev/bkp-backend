@@ -1,5 +1,7 @@
+import sys
+
 from backup.databases import database
-from backup.engines import local_psql_engine, server_mysql_engine
+from backup.engines import mysql_engine, psql_engine
 from backup.entities.backup import Backup
 from backup.repositories import (
     backup_repository,
@@ -7,31 +9,33 @@ from backup.repositories import (
     os_repository,
 )
 
-psql_engine = local_psql_engine.LocalPsqlEngineConnection()
-local_psql_session = psql_engine.make_session()
+psql_engine = psql_engine.PsqlEngineConnection()
+psql_session = psql_engine.make_session()
 
-mysql_engine = server_mysql_engine.ServerMysqlEngineConnection()
-server_mysql_session = mysql_engine.make_session()
+mysql_engine = mysql_engine.MysqlEngineConnection()
+mysql_session = mysql_engine.make_session()
 
 try:
     database.create_tables(psql_engine)
-    repository_backup = backup_repository.BackupRepository(local_psql_session)
+    repository_backup = backup_repository.BackupRepository(psql_session)
     repository_frequence = frequency_repository.FrequencyRepository(
-        local_psql_session
+        psql_session
     )
-
-    backup_db = repository_backup.get_backup_by_id(7)
-    backup = Backup(
-        description=backup_db.description,
-        source=backup_db.source,
-        target=backup_db.target,
-        program=backup_db.program,
-        options=backup_db.options,
-        frequency=backup_db.frequency,
-    )
-    repository_os = os_repository.OsRepository(backup)
-    repository_os.make_backup(local_psql_session)
-
+    try:
+        param = sys.argv[1]
+        if param == '--sincronization' or param == '-s':
+            pass
+        backups_db = repository_backup.get_backup_by_frequency(1)
+        for backup_db in backups_db:
+            backup = Backup()
+            new_backup = backup.convert(backup_db)
+            repository_os = os_repository.OsRepository(new_backup)
+            repository_os.make_backup(psql_session)
+    except IndexError:
+        print('Usage: backup [option]')
+        print('-s, --sincronization     Backup de sincronização.')
+        print('-w, --weekly             Backup semanal.')
+        print('-m, --monthly            Backup mensal.')
 finally:
-    local_psql_session.close()
-    server_mysql_session.close()
+    psql_session.close()
+    mysql_session.close()

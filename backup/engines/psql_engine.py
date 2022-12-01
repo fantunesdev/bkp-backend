@@ -10,7 +10,7 @@ from backup.engines.engine import Engine
 load_dotenv()
 
 
-class LocalPsqlEngineConnection(Engine):
+class PsqlEngineConnection(Engine):
     def connect(self):
         try:
             client = hvac.Client(url=os.getenv('VAULT_URL'))

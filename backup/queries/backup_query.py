@@ -17,10 +17,16 @@ class BackupQuery:
         return self.session.query(database.Backup)
 
     def get_backup_by_id(self, backup_id: int):
-        db_backup = self.session.get(database.Backup, backup_id)
-        if not db_backup:
+        backup_db = self.session.get(database.Backup, backup_id)
+        if not backup_db:
             raise NoResultFound
-        return db_backup
+        return backup_db
+
+    def get_backup_by_frequency(self, frequency_id: int):
+        backups_db = self.session.query(database.Backup).filter(database.Backup.frequency == frequency_id)
+        if not backups_db:
+            raise NoResultFound
+        return backups_db
 
     def get_backup_by_description_and_frequency(self, backup):
         backup_db = (

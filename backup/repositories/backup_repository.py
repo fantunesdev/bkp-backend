@@ -53,6 +53,12 @@ class BackupRepository:
         except NoResultFound:
             return None
 
+    def get_backup_by_frequency(self, frequency_id: int):
+        try:
+            return self.queries.get_backup_by_frequency(frequency_id)
+        except NoResultFound:
+            return None
+
     def get_backup_by_description_and_frequency(self, backup):
         try:
             return self.queries.get_backup_by_description_and_frequency(backup)
