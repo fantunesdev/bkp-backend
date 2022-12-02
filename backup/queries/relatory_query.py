@@ -1,4 +1,5 @@
 from sqlalchemy import func
+from datetime import datetime
 
 from backup.databases import database
 
@@ -22,6 +23,12 @@ class RelatoryQuery:
         return self.session.query(database.Relatory).filter(
             func.DATE(database.Relatory.date) == date
         )
+
+    def get_relatory_by_backup_and_date(self, backup: database.Backup, date):
+        relatories_db = self.session.query(database.Relatory)\
+            .filter(func.DATE(database.Relatory.date) == date)\
+            .filter(backup.id == database.Relatory.backup)
+        return relatories_db
 
     def remove_relatory(self, relatory):
         self.session.delete(relatory)

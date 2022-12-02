@@ -26,6 +26,14 @@ class Backup(Base):
         """Retorno padrão da classe Backup."""
         return self.description
 
+    def __eq__(self, other):
+        """Verifica se dois objetos desta classe são iguais."""
+        return self.source == other.source and self.target == other.target
+
+    def __ne__(self, other):
+        """Verifica se dois objetos desta classe são diferentes."""
+        return self.source != other.source or self.target != other.target
+
 
 class Frequency(Base):
     __tablename__ = 'frequency'
@@ -48,6 +56,14 @@ class Relatory(Base):
     def __repr__(self):
         """Retorno padrão da classe Relatory."""
         return f'Data: {self.date} - Backup: {self.backup}'
+
+    def __eq__(self, other):
+        """Verifica se dois objetos desta classe são iguais."""
+        return self.backup == other.backup and self.status == other.status
+
+    def __ne__(self, other):
+        """Verifica se dois objetos desta classe são iguais."""
+        return self.backup != other.backup and self.status != other.status
 
 
 class Device(Base):

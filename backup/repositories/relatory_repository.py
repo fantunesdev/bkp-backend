@@ -30,3 +30,16 @@ class RelatoryRepository:
             date_str = date.strftime('%Y-%m-%d')
             return self.__queries.get_relatory_by_date(date_str)
         return self.__queries.get_relatory_by_date(date)
+
+    def get_relatories_by_backup_and_date(
+        self, backup: database.Backup, date: datetime
+    ):
+        if isinstance(date, datetime):
+            date_str = date.strftime('%Y-%m-%d')
+            return self.__queries.get_relatory_by_backup_and_date(
+                backup, date_str
+            )
+        return self.__queries.get_relatory_by_backup_and_date(backup, date)
+
+    def remove_relatory(self, relatory: database.Relatory):
+        self.__queries.remove_relatory(relatory)

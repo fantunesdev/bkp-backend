@@ -1,4 +1,4 @@
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm.session import Session
 
 from backup.databases import database
@@ -23,7 +23,9 @@ class BackupQuery:
         return backup_db
 
     def get_backup_by_frequency(self, frequency_id: int):
-        backups_db = self.session.query(database.Backup).filter(database.Backup.frequency == frequency_id)
+        backups_db = self.session.query(database.Backup).filter(
+            database.Backup.frequency == frequency_id
+        )
         if not backups_db:
             raise NoResultFound
         return backups_db
