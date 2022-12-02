@@ -24,18 +24,19 @@ try:
     try:
         param = sys.argv[1]
         if param in ('--sincronization', '-s'):
-            backups_db = repository_backup.get_backup_by_frequency(1)
-            for backup_db in backups_db:
-                backup = Backup()
-                new_backup = backup.convert(backup_db)
-                repository_os = os_repository.OsRepository(new_backup)
-                repository_os.make_backup(psql_session)
+            frequency_id = 1
         elif param in ('-w', '--weekly'):
-            pass
+            frequency_id = 2
         elif param in ('-m', '--monthly '):
-            pass
+            frequency_id = 3
         else:
             raise IndexError
+        backups_db = repository_backup.get_backup_by_frequency(frequency_id)
+        for backup_db in backups_db:
+            backup = Backup()
+            new_backup = backup.convert(backup_db)
+            repository_os = os_repository.OsRepository(new_backup)
+            repository_os.make_backup(psql_session)
     except IndexError:
         print('Usage: backup [option]')
         print('-s, --sincronization     Backup de sincronização.')
