@@ -140,7 +140,7 @@ class OsRepository:
 
     def move_file(self, source: str, target: str):
         try:
-            self.__messages += f'Movendo {source} para {self.backup.source}:'
+            self.__messages += f'Movendo {source} para {self.backup.target}: '
             if not os.path.isdir(target):
                 raise FileNotFoundError
             with subprocess.Popen(['mv', source, target]) as command:

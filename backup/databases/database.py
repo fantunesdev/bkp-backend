@@ -48,7 +48,7 @@ class Frequency(Base):
 class Relatory(Base):
     __tablename__ = 'relatory'
     id = Column(BigInteger, primary_key=True, autoincrement=True, unique=True)
-    backup = Column('Backup', ForeignKey('backup.id'))
+    backup = Column('backup', ForeignKey('backup.id'))
     status = Column(Boolean, nullable=False)
     date = Column(DateTime)
     log = Column(String)
