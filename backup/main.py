@@ -53,4 +53,4 @@ try:
         print('-m, --monthly            Backup mensal.')
 finally:
     psql_session.close()
-    os.system('vault -s')
+    os.system('vaultctl -s')
