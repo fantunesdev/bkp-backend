@@ -1,6 +1,5 @@
 import os
 import sys
-from datetime import datetime
 
 from backup.databases import database
 from backup.engines import psql_engine
@@ -22,15 +21,15 @@ try:
     )
     try:
         param = sys.argv[1]
-        frequency_id = None
+        backups_db = None
         if param in ('--sincronization', '-s'):
-            frequency_id = 1
+            backups_db = repository_backup.get_backup_by_frequency(1)
         elif param in ('-w', '--weekly'):
-            frequency_id = 3
-        if frequency_id:
-            backups_db = repository_backup.get_backup_by_frequency(
-                frequency_id
-            )
+            backups_db = repository_backup.get_backup_by_frequency(3)
+        else:
+            raise IndexError
+
+        if backups_db:
             for backup_db in backups_db:
                 backup = Backup()
                 new_backup = backup.convert(backup_db)
